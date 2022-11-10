@@ -285,11 +285,6 @@ func (display *ProgressDisplay) println(line string) {
 	display.renderer.println(display, line)
 }
 
-type treeColumn struct {
-	contents string
-	width    int
-}
-
 type treeNode struct {
 	row Row
 

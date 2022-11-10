@@ -65,7 +65,7 @@ func rowWidth(columnWidths []int) int {
 	for i, w := range columnWidths {
 		// Account for padding between columns.
 		if i == 0 {
-			w += 1
+			w++
 		} else {
 			w += 2
 		}
