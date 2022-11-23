@@ -22,13 +22,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -174,7 +172,6 @@ func testConstructUnknown(t *testing.T, lang string, dependencies ...string) {
 		t.Run(test.componentDir, func(t *testing.T) {
 			localProviders :=
 				[]integration.LocalDependency{
-					{Package: "testprovider", Path: buildTestProvider(t, filepath.Join("..", "testprovider"))},
 					{Package: "testcomponent", Path: filepath.Join(testDir, test.componentDir)},
 				}
 			integration.ProgramTest(t, &integration.ProgramTestOptions{
@@ -217,7 +214,6 @@ func testConstructMethodsUnknown(t *testing.T, lang string, dependencies ...stri
 		t.Run(test.componentDir, func(t *testing.T) {
 			localProviders :=
 				[]integration.LocalDependency{
-					{Package: "testprovider", Path: buildTestProvider(t, filepath.Join("..", "testprovider"))},
 					{Package: "testcomponent", Path: filepath.Join(testDir, test.componentDir)},
 				}
 			integration.ProgramTest(t, &integration.ProgramTestOptions{
@@ -233,37 +229,6 @@ func testConstructMethodsUnknown(t *testing.T, lang string, dependencies ...stri
 			})
 		})
 	}
-}
-
-func buildTestProvider(t *testing.T, providerDir string) string {
-	fn := func() {
-		providerName := "pulumi-resource-testprovider"
-		if runtime.GOOS == "windows" {
-			providerName += ".exe"
-		}
-
-		_, err := os.Stat(filepath.Join(providerDir, providerName))
-		if err == nil {
-			return
-		} else if errors.Is(err, os.ErrNotExist) {
-			// Not built yet, continue.
-		} else {
-			t.Fatalf("Unexpected error building test provider: %v", err)
-		}
-
-		cmd := exec.Command("go", "build", "-o", providerName)
-		cmd.Dir = providerDir
-		output, err := cmd.CombinedOutput()
-		if err != nil {
-			contract.AssertNoErrorf(err, "failed to run setup script: %v", string(output))
-		}
-	}
-	lockfile := filepath.Join(providerDir, ".lock")
-	timeout := 10 * time.Minute
-	synchronouslyDo(t, lockfile, timeout, fn)
-
-	// Allows us to drop this in in places where providerDir was used:
-	return providerDir
 }
 
 func runComponentSetup(t *testing.T, testDir string) {
@@ -341,7 +306,6 @@ func testConstructMethodsResources(t *testing.T, lang string, dependencies ...st
 		t.Run(test.componentDir, func(t *testing.T) {
 			localProviders :=
 				[]integration.LocalDependency{
-					{Package: "testprovider", Path: buildTestProvider(t, filepath.Join("..", "testprovider"))},
 					{Package: "testcomponent", Path: filepath.Join(testDir, test.componentDir)},
 				}
 			integration.ProgramTest(t, &integration.ProgramTestOptions{
@@ -439,7 +403,6 @@ func testConstructOutputValues(t *testing.T, lang string, dependencies ...string
 		t.Run(test.componentDir, func(t *testing.T) {
 			localProviders :=
 				[]integration.LocalDependency{
-					{Package: "testprovider", Path: buildTestProvider(t, filepath.Join("..", "testprovider"))},
 					{Package: "testcomponent", Path: filepath.Join(testDir, test.componentDir)},
 				}
 			integration.ProgramTest(t, &integration.ProgramTestOptions{

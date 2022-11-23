@@ -1,3 +1,7 @@
 name: construct_component_unknown_dotnet
 description: A program that constructs remote component resources with unknowns during preview.
 runtime: dotnet
+plugins:
+  providers:
+    - name: testprovider
+      path: ../../../testprovider

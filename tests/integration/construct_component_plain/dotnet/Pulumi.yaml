@@ -1,3 +1,7 @@
 name: construct_component_plain_dotnet
 description: A program that constructs a remote component resource with prompt inputs.
 runtime: dotnet
+plugins:
+  providers:
+    - name: testprovider
+      path: ../../../testprovider
