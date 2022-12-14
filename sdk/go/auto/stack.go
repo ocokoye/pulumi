@@ -1017,6 +1017,8 @@ const (
 )
 
 type languageRuntimeServer struct {
+	pulumirpc.UnimplementedLanguageRuntimeServer
+
 	m sync.Mutex
 	c *sync.Cond
 
