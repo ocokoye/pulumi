@@ -263,6 +263,8 @@ func (g *generator) GenFunctionCallExpression(w io.Writer, expr *model.FunctionC
 	case "filebase64sha256":
 		// Assuming the existence of the following helper method
 		g.Fgenf(w, "filebase64sha256OrPanic(%v)", expr.Args[0])
+	case "call":
+		g.Fgenf(w, "%s.%s(%v)", expr.Res, expr.Name, expr.Args[0])
 	case pcl.Invoke:
 
 		pkg, module, fn, diags := g.functionName(expr.Args[0])
