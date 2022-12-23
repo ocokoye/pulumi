@@ -358,6 +358,8 @@ type ConstructOptions struct {
 	Providers map[string]string
 	// PropertyDependencies is a map from property name to a list of resources that property depends on.
 	PropertyDependencies map[resource.PropertyKey][]resource.URN
+	// Transformations is an array of function callback references.
+	Transformations []string
 }
 
 // ConstructResult is the result of a call to Construct.

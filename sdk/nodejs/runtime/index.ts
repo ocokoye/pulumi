@@ -22,6 +22,7 @@ export {
 export { CodePathOptions, computeCodePaths } from "./closure/codePaths";
 export { Mocks, setMocks, MockResourceArgs, MockCallArgs } from "./mocks";
 
+export * from "./callback";
 export * from "./config";
 export * from "./invoke";
 export * from "./resource";

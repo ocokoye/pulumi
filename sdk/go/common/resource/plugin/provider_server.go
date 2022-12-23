@@ -465,6 +465,7 @@ func (p *providerServer) Construct(ctx context.Context,
 		Protect:              req.GetProtect(),
 		Providers:            req.GetProviders(),
 		PropertyDependencies: propertyDependencies,
+		Transformations:      req.GetTransformations(),
 	}
 
 	result, err := p.provider.Construct(info, typ, name, parent, inputs, options)

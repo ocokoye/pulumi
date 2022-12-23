@@ -35,9 +35,10 @@ import {
     URN,
 } from "../resource";
 import { debuggablePromise } from "./debuggable";
-import { monitorSupportsDeletedWith } from "./settings";
+import { monitorSupportsCallbacks, monitorSupportsDeletedWith } from "./settings";
 import { invoke } from "./invoke";
 
+import { registerCallback } from "./callback";
 import {
     deserializeProperties,
     deserializeProperty,
@@ -390,6 +391,17 @@ export function registerResource(res: Resource, parent: Resource | undefined, t:
         const providerRefs = req.getProvidersMap();
         for (const [key, ref] of resop.providerRefs) {
             providerRefs.set(key, ref);
+        }
+
+        if (remote && res.__transformations && res.__transformations.length > 0 && await monitorSupportsCallbacks()) {
+            const callbackRefs: string[] = [];
+            for (const transformation of res.__transformations) {
+                callbackRefs.push(await registerCallback(args => {
+                    const result = transformation(args) ?? null;
+                    return { result };
+                }));
+            }
+            req.setTransformationsList(callbackRefs);
         }
 
         // Now run the operation, serializing the invocation if necessary.

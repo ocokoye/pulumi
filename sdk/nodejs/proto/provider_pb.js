@@ -6517,7 +6517,7 @@ proto.pulumirpc.DeleteRequest.prototype.setTimeout = function(value) {
  * @private {!Array<number>}
  * @const
  */
-proto.pulumirpc.ConstructRequest.repeatedFields_ = [14,15,16];
+proto.pulumirpc.ConstructRequest.repeatedFields_ = [14,15,16,18];
 
 
 
@@ -6566,7 +6566,8 @@ proto.pulumirpc.ConstructRequest.toObject = function(includeInstance, msg) {
     aliasesList: (f = jspb.Message.getRepeatedField(msg, 14)) == null ? undefined : f,
     dependenciesList: (f = jspb.Message.getRepeatedField(msg, 15)) == null ? undefined : f,
     configsecretkeysList: (f = jspb.Message.getRepeatedField(msg, 16)) == null ? undefined : f,
-    organization: jspb.Message.getFieldWithDefault(msg, 17, "")
+    organization: jspb.Message.getFieldWithDefault(msg, 17, ""),
+    transformationsList: (f = jspb.Message.getRepeatedField(msg, 18)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -6677,6 +6678,10 @@ proto.pulumirpc.ConstructRequest.deserializeBinaryFromReader = function(msg, rea
     case 17:
       var value = /** @type {string} */ (reader.readString());
       msg.setOrganization(value);
+      break;
+    case 18:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addTransformations(value);
       break;
     default:
       reader.skipField();
@@ -6815,6 +6820,13 @@ proto.pulumirpc.ConstructRequest.serializeBinaryToWriter = function(message, wri
   if (f.length > 0) {
     writer.writeString(
       17,
+      f
+    );
+  }
+  f = message.getTransformationsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      18,
       f
     );
   }
@@ -7368,6 +7380,43 @@ proto.pulumirpc.ConstructRequest.prototype.getOrganization = function() {
  */
 proto.pulumirpc.ConstructRequest.prototype.setOrganization = function(value) {
   return jspb.Message.setProto3StringField(this, 17, value);
+};
+
+
+/**
+ * repeated string transformations = 18;
+ * @return {!Array<string>}
+ */
+proto.pulumirpc.ConstructRequest.prototype.getTransformationsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 18));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.pulumirpc.ConstructRequest} returns this
+ */
+proto.pulumirpc.ConstructRequest.prototype.setTransformationsList = function(value) {
+  return jspb.Message.setField(this, 18, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.pulumirpc.ConstructRequest} returns this
+ */
+proto.pulumirpc.ConstructRequest.prototype.addTransformations = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 18, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.pulumirpc.ConstructRequest} returns this
+ */
+proto.pulumirpc.ConstructRequest.prototype.clearTransformationsList = function() {
+  return this.setTransformationsList([]);
 };
 
 

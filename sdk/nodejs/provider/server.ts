@@ -23,6 +23,7 @@ import * as settings from "../runtime/settings";
 import * as rpc from "../runtime/rpc";
 import * as config from "../runtime/config";
 import { parseArgs } from "./internals";
+import { createRemoteCallback } from "../runtime";
 
 const anyproto = require("google-protobuf/google/protobuf/any_pb.js");
 const emptyproto = require("google-protobuf/google/protobuf/empty_pb.js");
@@ -315,6 +316,14 @@ class Server implements grpc.UntypedServiceImplementation {
                     providers[pkg] = createProviderResource(ref);
                 }
             }
+
+            // TODO how do we handle async transformations?
+            // const transformations: resource.ResourceTransformation[] = [];
+            // for (const reference of req.getTransformationsList()) {
+            //     const callback = createRemoteCallback(reference);
+            // }
+
+
             const opts: resource.ComponentResourceOptions = {
                 aliases: req.getAliasesList(),
                 dependsOn: dependsOn,

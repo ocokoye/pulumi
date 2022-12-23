@@ -106,6 +106,13 @@ func construct(ctx context.Context, req *pulumirpc.ConstructRequest, engineConn 
 	if req.GetParent() != "" {
 		parent = pulumiCtx.newDependencyResource(URN(req.GetParent()))
 	}
+	var transformations []ResourceTransformation
+	if len(req.GetTransformations()) > 0 {
+		transformations = make([]ResourceTransformation, len(req.GetTransformations()))
+		for i, reference := range req.GetTransformations() {
+			transformations[i] = makeRemoteResourceTransformation(pulumiCtx, reference)
+		}
+	}
 	opts := resourceOption(func(ro *resourceOptions) {
 		ro.Aliases = aliases
 		ro.DependsOn = []func(ctx context.Context) (urnSet, error){
@@ -116,6 +123,7 @@ func construct(ctx context.Context, req *pulumirpc.ConstructRequest, engineConn 
 		ro.Protect = req.GetProtect()
 		ro.Providers = providers
 		ro.Parent = parent
+		ro.Transformations = transformations
 	})
 
 	urn, state, err := constructF(pulumiCtx, req.GetType(), req.GetName(), inputs, opts)

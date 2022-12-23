@@ -331,6 +331,7 @@ message ConstructRequest {
     repeated string dependencies = 15;                        // a list of URNs that this resource depends on, as observed by the language host.
     repeated string configSecretKeys = 16;                    // the configuration keys that have secret values.
     string organization = 17;                                 // the organization of the stack being deployed into.
+    repeated string transformations = 18;                     // a list of transformation callback references.
 }
 
 message ConstructResponse {

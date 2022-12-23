@@ -5,31 +5,38 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
+	"sync"
 
 	uuid "github.com/gofrs/uuid"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/pulumi/pulumi/sdk/v3/go/common/resource"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/resource/plugin"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/tokens"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/util/contract"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/workspace"
+	pulumirpc "github.com/pulumi/pulumi/sdk/v3/proto/go"
 )
 
 type builtinProvider struct {
 	context context.Context
 	cancel  context.CancelFunc
 
-	backendClient BackendClient
-	resources     *resourceMap
+	backendClient   BackendClient
+	resources       *resourceMap
+	callbackClients *callbackMap
 }
 
 func newBuiltinProvider(backendClient BackendClient, resources *resourceMap) *builtinProvider {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &builtinProvider{
-		context:       ctx,
-		cancel:        cancel,
-		backendClient: backendClient,
-		resources:     resources,
+		context:         ctx,
+		cancel:          cancel,
+		backendClient:   backendClient,
+		resources:       resources,
+		callbackClients: &callbackMap{},
 	}
 }
 
@@ -174,6 +181,7 @@ func (p *builtinProvider) Construct(info plugin.ConstructInfo, typ tokens.Type, 
 const readStackOutputs = "pulumi:pulumi:readStackOutputs"
 const readStackResourceOutputs = "pulumi:pulumi:readStackResourceOutputs"
 const getResource = "pulumi:pulumi:getResource"
+const invokeCallback = "pulumi:pulumi:invokeCallback"
 
 func (p *builtinProvider) Invoke(tok tokens.ModuleMember,
 	args resource.PropertyMap) (resource.PropertyMap, []plugin.CheckFailure, error) {
@@ -193,6 +201,12 @@ func (p *builtinProvider) Invoke(tok tokens.ModuleMember,
 		return outs, nil, nil
 	case getResource:
 		outs, err := p.getResource(args)
+		if err != nil {
+			return nil, nil, err
+		}
+		return outs, nil, nil
+	case invokeCallback:
+		outs, err := p.invokeCallback(args)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -293,4 +307,86 @@ func (p *builtinProvider) getResource(inputs resource.PropertyMap) (resource.Pro
 		"id":    resource.NewStringProperty(string(state.ID)),
 		"state": resource.NewObjectProperty(state.Outputs),
 	}, nil
+}
+
+func (p *builtinProvider) invokeCallback(inputs resource.PropertyMap) (resource.PropertyMap, error) {
+	referenceProp, ok := inputs["reference"]
+	contract.Assert(ok)
+	contract.Assert(referenceProp.IsString())
+	reference := referenceProp.StringValue()
+
+	parts := strings.Split(reference, "/")
+	if len(parts) == 0 {
+		return nil, fmt.Errorf("invalid callback reference %s", reference)
+	}
+	address := parts[0]
+	if address == "" {
+		return nil, fmt.Errorf("no address in callback reference %s", reference)
+	}
+
+	client, ok := p.callbackClients.get(address)
+	if !ok {
+		target := fmt.Sprintf("127.0.0.1:%s", address)
+		conn, err := grpc.Dial(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			return nil, fmt.Errorf("did not connect: %w", err)
+		}
+		client = pulumirpc.NewCallbackClient(conn)
+		p.callbackClients.set(address, client)
+	}
+
+	argsProp, ok := inputs["args"]
+	contract.Assert(ok)
+	contract.Assert(argsProp.IsObject())
+	args := argsProp.ObjectValue()
+
+	argsStruct, err := plugin.MarshalProperties(args, plugin.MarshalOptions{
+		KeepUnknowns:     true,
+		KeepSecrets:      true,
+		KeepResources:    true,
+		KeepOutputValues: true,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("marshaling args: %w", err)
+	}
+
+	// TODO plumb through the context?
+	resp, err := client.Invoke(context.Background(), &pulumirpc.CallbackInvokeRequest{
+		Reference: reference,
+		Args:      argsStruct,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("invoking the callback: %w", err)
+	}
+
+	result, err := plugin.UnmarshalProperties(resp.Return, plugin.MarshalOptions{
+		KeepUnknowns:     true,
+		KeepSecrets:      true,
+		KeepResources:    true,
+		KeepOutputValues: true,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("unmarshaling return: %w", err)
+	}
+
+	return result, nil
+}
+
+type callbackMap struct {
+	m sync.Map
+}
+
+func (m *callbackMap) set(address string, client pulumirpc.CallbackClient) {
+	m.m.Store(address, client)
+}
+
+func (m *callbackMap) get(address string) (pulumirpc.CallbackClient, bool) {
+	if m == nil {
+		panic(fmt.Errorf("justin omg nil"))
+	}
+	c, ok := m.m.Load(address)
+	if !ok {
+		return nil, false
+	}
+	return c.(pulumirpc.CallbackClient), true
 }

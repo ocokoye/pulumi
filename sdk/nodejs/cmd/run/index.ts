@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import * as log from "../../log";
+import * as callback from "../../runtime/callback";
 
 // The very first thing we do is set up unhandled exception and rejection hooks to ensure that these
 // events cause us to exit with a non-zero code. It is critically important that we do this early:
@@ -171,7 +172,9 @@ function main(args: string[]): void {
         // Note: we only do this in the 'resolved' arg of '.then' (not the 'rejected' arg).  If the users code throws
         // an exception, this promise will get rejected, and we don't want to touch or otherwise intercept the exception
         // or change the programRunning state here at all.
-        promise.then(() => { programRunning = false; });
+        promise
+            .then(() => { programRunning = false; })
+            .then(() => { callback.shutdownServer(); });
     });
 }
 

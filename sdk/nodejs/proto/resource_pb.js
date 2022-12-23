@@ -1238,7 +1238,7 @@ proto.pulumirpc.ReadResourceResponse.prototype.hasProperties = function() {
  * @private {!Array<number>}
  * @const
  */
-proto.pulumirpc.RegisterResourceRequest.repeatedFields_ = [7,12,14,15,23,26];
+proto.pulumirpc.RegisterResourceRequest.repeatedFields_ = [7,12,14,15,23,26,28];
 
 
 
@@ -1298,7 +1298,8 @@ proto.pulumirpc.RegisterResourceRequest.toObject = function(includeInstance, msg
     retainondelete: jspb.Message.getBooleanFieldWithDefault(msg, 25, false),
     aliasesList: jspb.Message.toObjectList(msg.getAliasesList(),
     pulumi_alias_pb.Alias.toObject, includeInstance),
-    deletedwith: jspb.Message.getFieldWithDefault(msg, 27, "")
+    deletedwith: jspb.Message.getFieldWithDefault(msg, 27, ""),
+    transformationsList: (f = jspb.Message.getRepeatedField(msg, 28)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -1449,6 +1450,10 @@ proto.pulumirpc.RegisterResourceRequest.deserializeBinaryFromReader = function(m
     case 27:
       var value = /** @type {string} */ (reader.readString());
       msg.setDeletedwith(value);
+      break;
+    case 28:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addTransformations(value);
       break;
     default:
       reader.skipField();
@@ -1662,6 +1667,13 @@ proto.pulumirpc.RegisterResourceRequest.serializeBinaryToWriter = function(messa
   if (f.length > 0) {
     writer.writeString(
       27,
+      f
+    );
+  }
+  f = message.getTransformationsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      28,
       f
     );
   }
@@ -2658,6 +2670,43 @@ proto.pulumirpc.RegisterResourceRequest.prototype.getDeletedwith = function() {
  */
 proto.pulumirpc.RegisterResourceRequest.prototype.setDeletedwith = function(value) {
   return jspb.Message.setProto3StringField(this, 27, value);
+};
+
+
+/**
+ * repeated string transformations = 28;
+ * @return {!Array<string>}
+ */
+proto.pulumirpc.RegisterResourceRequest.prototype.getTransformationsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 28));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.pulumirpc.RegisterResourceRequest} returns this
+ */
+proto.pulumirpc.RegisterResourceRequest.prototype.setTransformationsList = function(value) {
+  return jspb.Message.setField(this, 28, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.pulumirpc.RegisterResourceRequest} returns this
+ */
+proto.pulumirpc.RegisterResourceRequest.prototype.addTransformations = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 28, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.pulumirpc.RegisterResourceRequest} returns this
+ */
+proto.pulumirpc.RegisterResourceRequest.prototype.clearTransformationsList = function() {
+  return this.setTransformationsList([]);
 };
 
 

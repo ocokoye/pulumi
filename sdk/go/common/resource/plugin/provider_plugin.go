@@ -1267,6 +1267,7 @@ func (p *provider) Construct(info ConstructInfo, typ tokens.Type, name tokens.QN
 		InputDependencies: inputDependencies,
 		Aliases:           aliasURNs,
 		Dependencies:      dependencies,
+		Transformations:   options.Transformations,
 	})
 	if err != nil {
 		return ConstructResult{}, err
