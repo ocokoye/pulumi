@@ -620,6 +620,24 @@ func JSONMarshalWithContext(ctx context.Context, v interface{}) StringOutput {
 	}).(StringOutput)
 }
 
+// JSONUnmarshal uses "encoding/json".Unmarshal to deserialize the given Input JSON string into a value.
+func JSONUnmarshal(v StringInput) AnyOutput {
+	return JSONUnmarshalWithContext(context.Background(), v)
+}
+
+// JSONUnmarshalWithContext uses "encoding/json".Unmarshal to deserialize the given Input JSON string into a value.
+func JSONUnmarshalWithContext(ctx context.Context, data StringInput) AnyOutput {
+	o := ToOutputWithContext(ctx, data)
+	return o.ApplyTWithContext(ctx, func(_ context.Context, data string) (interface{}, error) {
+		var v interface{}
+		err := json.Unmarshal([]byte(data), &v)
+		if err != nil {
+			return nil, err
+		}
+		return v, nil
+	}).(AnyOutput)
+}
+
 func gatherJoins(v interface{}) workGroups {
 	if v == nil {
 		return nil
